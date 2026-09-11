@@ -77,6 +77,7 @@
 		  (?q "square" 130 130)
 		  (?W "smaller big square" 123 122)
 		  (?F "Fabriclive" 130 122)
+		  (?E "Edsel" 183 183)
 		  (?Q "bigger square" 134 134)
 		  (?w "smaller big square" 133 131)
 		  (?v "mort aux vaches" 136 128)
@@ -104,6 +105,7 @@
 		  (?L "bigger lp" 320 320)
 		  (?i "inner lp" 300 300)
 		  (?K "smaller LP package" 304 280)
+		  (?p "paris review" 134 211)
 		  (?P "postcard portrait" 103 145)
 		  (?p "postcard landscape" 145 103)
 		  (?f "7 inch flexi" 150 148)
@@ -152,7 +154,7 @@
 	  (if (not (nth 2 spec))
 	      (setq continue nil)
 	    (shell-command
-	     (format "scanimage --mode=color -d epson:libusb:%s:%s --resolution 300dpi -t %s -l %s -x %s -y %s | pnmflip -topbottom -leftright | pnmtotiff > %s/%s-%d-%c.tiff"
+	     (format "scanimage --mode=color -d epson2:libusb:%s:%s --resolution 300dpi -t %s -l %s -x %s -y %s | pnmflip -topbottom -leftright | pnmtotiff > %s/%s-%d-%c.tiff"
 		     (car device)
 		     (cdr device)
 		     (or (nth 4 spec) 0)
@@ -162,6 +164,25 @@
 		     (if (= (nth 0 spec) 13)
 			 ?C
 		       (nth 0 spec))))))))))
+
+(defun scan-single (file &optional type)
+  "Scan one sleeve to FILE."
+  (interactive "fFile name: ")
+  (let ((dir (file-name-directory file))
+	(device (scan-find-device))
+	(type (or type "jpeg")))
+    (unless (file-exists-p dir)
+      (make-directory dir))
+    (let ((spec (scan-type t)))
+      (when (nth 2 spec)
+	(shell-command
+	 (format "scanimage --mode=color -d epson2:libusb:%s:%s --resolution 300dpi -t %s -l %s -x %s -y %s | pnmflip -topbottom -leftright | pnmto%s > '%s'"
+		 (car device)
+		 (cdr device)
+		 (or (nth 4 spec) 0)
+		 (or (nth 5 spec) 0)
+		 (nth 2 spec) (nth 3 spec)
+		 type file))))))
 
 (defun scan-pages (name)
   "Prompt for an item name (like MARTIN), create the directory and scan."
